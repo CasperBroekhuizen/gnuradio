@@ -71,6 +71,29 @@ cc_encoder_impl::cc_encoder_impl(int frame_size,
             "cc_encoder: Number of polynomials must be the same as the value of rate");
     }
 
+    if (d_rate < 2) {
+        throw std::runtime_error("cc_encoder: inverse rate r must be > 2");
+    }
+
+    if (k < 2 || k > 31) {
+        throw std::runtime_error(
+            "cc_encoder: constraint length K must in be the range [2, 31]");
+    }
+
+    if (d_start_state >= (1u << (d_k - 1))) {
+        throw std::runtime_error("cc_encoder: start state is invalid; must be in range "
+                                 "[0, 2^(K-1)-1] where K is the constraint length");
+    }
+
+    if (frame_size < 1) {
+        throw std::runtime_error("cc_encoder: frame_size must be > 0");
+    }
+
+    if (mode != CC_STREAMING && mode != CC_TRUNCATED && mode != CC_TAILBITING &&
+        mode != CC_TERMINATED) {
+        throw std::runtime_error("cc_encoder: invalid mode passed");
+    }
+
     partab_init();
 
     // set up a padding factor. If padding, extends the encoding
@@ -157,7 +180,7 @@ void cc_encoder_impl::generic_work(void* in_buffer, void* out_buffer)
     const unsigned char* in = (const unsigned char*)in_buffer;
     unsigned char* out = (unsigned char*)out_buffer;
 
-    unsigned char my_state = d_start_state;
+    unsigned my_state = d_start_state;
 
     if (d_mode == CC_TAILBITING) {
         for (unsigned int i = 0; i < d_k - 1; ++i) {

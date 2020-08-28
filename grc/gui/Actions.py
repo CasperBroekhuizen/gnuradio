@@ -24,6 +24,7 @@ import logging
 
 from gi.repository import Gtk, Gdk, Gio, GLib, GObject
 
+from . import Utils
 
 log = logging.getLogger(__name__)
 
@@ -136,7 +137,10 @@ class Action(Gio.SimpleAction):
         self.label = label
         self.tooltip = tooltip
         self.icon_name = icon_name
-        self.keypresses = keypresses
+        if keypresses:
+            self.keypresses = [kp.replace("<Ctrl>", Utils.get_modifier_key(True)) for kp in keypresses]
+        else:
+            self.keypresses = None
         self.prefix = prefix
         self.preference_name = preference_name
         self.default = default
@@ -400,6 +404,12 @@ TOGGLE_HIDE_VARIABLES = actions.register("win.hide_variables",
     preference_name='hide_variables',
     default=False,
 )
+TOGGLE_SHOW_BLOCK_IDS = actions.register("win.show_block_ids",
+    label='Show All Block IDs',
+    tooltip='Show all the block IDs',
+    preference_name='show_block_ids',
+    default=False,
+)
 TOGGLE_FLOW_GRAPH_VAR_EDITOR = actions.register("win.toggle_variable_editor",
     label='Show _Variable Editor',
     tooltip='Show the variable editor. Modify variables and imports in this flow graph',
@@ -422,7 +432,8 @@ TOGGLE_AUTO_HIDE_PORT_LABELS = actions.register("win.auto_hide_port_labels",
 TOGGLE_SHOW_BLOCK_COMMENTS = actions.register("win.show_block_comments",
     label='Show Block Comments',
     tooltip="Show comment beneath each block",
-    preference_name='show_block_comments'
+    preference_name='show_block_comments',
+    default=True
 )
 TOGGLE_SHOW_CODE_PREVIEW_TAB = actions.register("win.toggle_code_preview",
     label='Generated Code Preview',
@@ -502,6 +513,12 @@ TYPES_WINDOW_DISPLAY = actions.register("app.types",
     label='_Types',
     tooltip='Types color mapping',
     icon_name='dialog-information',
+)
+KEYBOARD_SHORTCUTS_WINDOW_DISPLAY = actions.register("app.keys",
+    label='_Keys',
+    tooltip='Keyboard - Shortcuts',
+    icon_name='dialog-information',
+    keypresses=["<Ctrl>K"],
 )
 FLOW_GRAPH_GEN = actions.register("app.flowgraph.generate",
     label='_Generate',

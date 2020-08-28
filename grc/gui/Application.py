@@ -204,6 +204,7 @@ class Application(Gtk.Application):
                 Actions.TOGGLE_FLOW_GRAPH_VAR_EDITOR,
                 Actions.TOGGLE_FLOW_GRAPH_VAR_EDITOR_SIDEBAR,
                 Actions.TOGGLE_HIDE_VARIABLES,
+                Actions.TOGGLE_SHOW_BLOCK_IDS,
             ):
                 action.set_enabled(True)
                 if hasattr(action, 'load_from_preferences'):
@@ -448,6 +449,8 @@ class Application(Gtk.Application):
             Dialogs.show_help(main)
         elif action == Actions.TYPES_WINDOW_DISPLAY:
             Dialogs.show_types(main)
+        elif action == Actions.KEYBOARD_SHORTCUTS_WINDOW_DISPLAY:
+            Dialogs.show_keyboard_shortcuts(main)   
         elif action == Actions.ERRORS_WINDOW_DISPLAY:
             Dialogs.ErrorsDialog(main, flow_graph).run_and_destroy()
         elif action == Actions.TOGGLE_CONSOLE_WINDOW:
@@ -511,6 +514,12 @@ class Application(Gtk.Application):
             Actions.NOTHING_SELECT()
             action.save_to_preferences()
             varedit.save_to_preferences()
+            flow_graph_update()
+        elif action == Actions.TOGGLE_SHOW_BLOCK_IDS:
+            action.set_active(not action.get_active())
+            active = action.get_active()
+            Actions.NOTHING_SELECT()
+            action.save_to_preferences()
             flow_graph_update()
         elif action == Actions.TOGGLE_FLOW_GRAPH_VAR_EDITOR:
             # TODO: There may be issues at startup since these aren't triggered

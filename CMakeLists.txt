@@ -52,7 +52,7 @@ GR_REGISTER_COMPONENT("testing-support" ENABLE_TESTING)
 # Set the version information here
 SET(VERSION_MAJOR 3)
 SET(VERSION_API   8)
-SET(VERSION_ABI   0)
+SET(VERSION_ABI   1)
 SET(VERSION_PATCH 0)
 include(GrVersion) #setup version info
 
@@ -197,6 +197,12 @@ include(CMakeOverloads)
 # Compiler specific setup
 ########################################################################
 include(GrMiscUtils) #compiler flag check
+
+include(TestBigEndian)
+TEST_BIG_ENDIAN(GR_IS_BIG_ENDIAN)
+if(GR_IS_BIG_ENDIAN)
+    add_definitions(-DGR_IS_BIG_ENDIAN)
+endif(GR_IS_BIG_ENDIAN)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
    CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -436,6 +442,12 @@ if(NOT Volk_FOUND)
 
     SET(VOLK_INSTALL_LIBRARY_DIR ${CMAKE_INSTALL_PREFIX}/lib)
     SET(VOLK_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include)
+
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/volk/.lastrelease)
+        file(READ ${CMAKE_CURRENT_SOURCE_DIR}/volk/.lastrelease Volk_VERSION OFFSET 1)
+    else()
+        set(Volk_VERSION "2.0.0")
+    endif()
 else()
     message(STATUS "  An external VOLK has been found and will be used for build.")
     SET(ENABLE_VOLK TRUE)
@@ -445,6 +457,11 @@ else()
 endif(NOT Volk_FOUND)
 
 message(STATUS "  Override with -DENABLE_INTERNAL_VOLK=ON/OFF")
+
+if (Volk_VERSION VERSION_EQUAL "2.0.0")
+  message("  Version 2.0.0 of VOLK was detected. Applying workaround for broken rotator kernel.")
+  add_definitions(-DAPPLY_BROKEN_ROTATOR_WORKAROUND)
+endif()
 
 # Handle logging
 find_package(LOG4CPP REQUIRED)
